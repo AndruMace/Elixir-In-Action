@@ -10,7 +10,14 @@
 # A longest_line!/1 that returns the contents of the longest line in a file.
 # A words_per_line!/1 that returns a list of numbers, with each number representing the word count in a file. Hint: To find the word count of a line, use length(String.split(line)).
 
-defmodule ElixirInAction do
+# Model Func:
+# def large_lines!(path) do
+#  File.stream!(path)
+#  |> Stream.map(&String.trim_trailing(&1, "\n"))
+#  |> Enum.filter(&(String.length(&1) > 80))
+# end
+
+defmodule Recursion do
   # Recursion
   def list_len(list), do: list_len(0, list)
   defp list_len(acc, []), do: acc
