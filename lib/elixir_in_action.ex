@@ -17,6 +17,20 @@
 #  |> Enum.filter(&(String.length(&1) > 80))
 # end
 
+defmodule Streams do
+  def lines_length!(path) do
+    File.stream!(path) |> Enum.map(&String.length(&1))
+  end
+
+  def longest_line_length!(path) do
+    lines_length!(path) |> Enum.max()
+  end
+
+  # def longest_line!(path) do
+
+  # end
+end
+
 defmodule Recursion do
   # Recursion
   def list_len(list), do: list_len(0, list)

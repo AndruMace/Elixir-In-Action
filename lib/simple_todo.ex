@@ -1,11 +1,77 @@
 defmodule TodoList do
-  def new(), do: MultiDict.new()
+  defstruct next_id: 1, entries: %{}
 
-  def add_entry(todo_list, entry) do
-    MultiDict.add(todo_list, entry.date, entry)
+  # The following two lambda definitions are equivalent
+  # &add_entry(&2, &1)
+  # fn entry, todo_list_acc ->
+  #   add_entry(todo_list_acc, entry)
+  # end
+  def new(entries \\ []) do
+    Enum.reduce(
+      entries,
+      %TodoList{},
+      &add_entry(&2, &1)
+    )
   end
 
+  # IEX Usage
+  # TodoList.new() |> TodoList.add_entry(%{date: ~D[2025-07-03], title: "I sure hope this works"}) |> TodoList.entries(~D[2025-07-02])
+  @spec add_entry(TodoList, map()) :: TodoList
+  def add_entry(todo_list, entry) do
+    entry = Map.put(entry, :id, todo_list.next_id)
+
+    new_entries =
+      Map.put(
+        todo_list.entries,
+        todo_list.next_id,
+        entry
+      )
+
+    %TodoList{todo_list | entries: new_entries, next_id: todo_list.next_id + 1}
+  end
+
+  @spec entries(TodoList, Date) :: TodoList
   def entries(todo_list, date) do
-    MultiDict.get(todo_list, date)
+    todo_list.entries
+    |> Map.values()
+    |> Enum.filter(&(&1.date == date))
+  end
+
+  @spec update_entry(TodoList, integer(), fun()) :: TodoList
+  def update_entry(todo_list, entry_id, updater) do
+    case Map.fetch(todo_list.entries, entry_id) do
+      :error ->
+        todo_list
+
+      {:ok, old_entry} ->
+        new_entry = updater.(old_entry)
+        new_entries = Map.put(todo_list.entries, new_entry.id, new_entry)
+        %TodoList{todo_list | entries: new_entries}
+    end
+  end
+
+  def delete_entry(todo_list, entry_id) do
+    %TodoList{todo_list | entries: Map.delete(todo_list.entries, entry_id)}
+  end
+
+  def test_todo() do
+    td = new()
+    IO.inspect(td, label: "New todo list")
+
+    new_td =
+      td
+      |> add_entry(%{date: ~D[2025-07-04], title: "Test Entry"})
+      |> add_entry(%{date: ~D[2025-07-03], title: "Entry Test"})
+
+    IO.inspect(new_td, label: "List with entries")
+    IO.inspect(new_td |> entries(~D[2025-07-03]), label: "Fetch specific entry")
+    del_td = new_td |> delete_entry(2)
+    IO.inspect(del_td, label: "List with deleted entry")
+  end
+end
+
+defmodule TodoList.CsvImporter do
+  def import(path) do
+    File.stream!(path) |> Enum.map(&IO.puts(&1))
   end
 end
