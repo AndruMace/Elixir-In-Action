@@ -71,7 +71,24 @@ defmodule TodoList do
 end
 
 defmodule TodoList.CsvImporter do
+  # %TodoList{
+  #   entries: %{1=> %{date: date, title: "My todo"}},
+  #   next_id: 2
+  # }
   def import(path) do
-    File.stream!(path) |> Enum.map(&IO.puts(&1))
+    File.stream!(path)
+    |> Stream.map(fn str -> String.trim(str) end)
+    |> Stream.map(fn row ->
+      [date_string, title] = String.split(row, ",")
+      date = Date.from_iso8601!(date_string)
+      %{date: date, title: title}
+    end)
+    |> TodoList.new()
+  end
+end
+
+defimpl String.Chars, for: TodoList do
+  def to_string(_) do
+    "Todo"
   end
 end
