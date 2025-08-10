@@ -3,17 +3,24 @@ defmodule TodoServer do
     ServerProcess.start(TodoServer)
   end
 
-  def init(entries \\ []), do: TodoList.new(entries)
-
-  def handle_call({:entries, date}, todo_list), do: TodoList.entries(todo_list, date)
-  def handle_cast({:add_entry, entry}, todo_list), do: TodoList.add_entry(todo_list, entry)
-
   def add_entry(todo_server, new_entry) do
-    ServerProcess.cast({:add_entry, new_entry}, todo_server)
+    ServerProcess.cast(todo_server, {:add_entry, new_entry})
   end
 
   def entries(todo_server, date) do
-    ServerProcess.call({:entries, date}, todo_server)
+    ServerProcess.call(todo_server, {:entries, date})
+  end
+
+  def init do
+    TodoList.new()
+  end
+
+  def handle_cast({:add_entry, new_entry}, todo_list) do
+    TodoList.add_entry(todo_list, new_entry)
+  end
+
+  def handle_call({:entries, date}, todo_list) do
+    {TodoList.entries(todo_list, date), todo_list}
   end
 end
 
