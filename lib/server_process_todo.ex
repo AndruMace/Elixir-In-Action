@@ -1,26 +1,35 @@
 defmodule TodoServer do
+  use GenServer
+
+  # client
+
   def start do
-    ServerProcess.start(TodoServer)
+    GenServer.start(TodoServer, nil, name: __MODULE__)
   end
 
-  def add_entry(todo_server, new_entry) do
-    ServerProcess.cast(todo_server, {:add_entry, new_entry})
+  def add_entry(new_entry) do
+    GenServer.cast(__MODULE__, {:add_entry, new_entry})
   end
 
-  def entries(todo_server, date) do
-    ServerProcess.call(todo_server, {:entries, date})
+  def entries(date) do
+    GenServer.call(__MODULE__, {:entries, date})
   end
 
-  def init do
-    TodoList.new()
+  # server
+
+  @impl GenServer
+  def init(_) do
+    {:ok, TodoList.new()}
   end
 
+  @impl GenServer
   def handle_cast({:add_entry, new_entry}, todo_list) do
-    TodoList.add_entry(todo_list, new_entry)
+    {:noreply, TodoList.add_entry(todo_list, new_entry)}
   end
 
-  def handle_call({:entries, date}, todo_list) do
-    {TodoList.entries(todo_list, date), todo_list}
+  @impl GenServer
+  def handle_call({:entries, date}, _, todo_list) do
+    {:reply, TodoList.entries(todo_list, date), todo_list}
   end
 end
 
