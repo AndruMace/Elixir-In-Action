@@ -1,4 +1,6 @@
 defmodule Todo.System do
+  # TODO: revisit chapter 11, benchmark, and try to make some of the suggested changes to improve benchmark results
+
   def start_link do
     Supervisor.start_link(
       [
