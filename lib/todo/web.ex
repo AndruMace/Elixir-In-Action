@@ -12,7 +12,7 @@ defmodule Todo.Web do
 
     list_name
     |> Todo.Cache.server_process()
-    |> Plug.Server.add_entry(%{title: title, date: date})
+    |> Todo.Server.add_entry(%{title: title, date: date})
 
     conn
     |> Plug.Conn.put_resp_content_type("text/plain")
@@ -28,6 +28,14 @@ defmodule Todo.Web do
       list_name
       |> Todo.Cache.server_process()
       |> Todo.Server.entries(date)
+
+    formatted_entries =
+      entries
+      |> Enum.map_join("\n", &"#{&1.date} #{&1.title}")
+
+    conn
+    |> Plug.Conn.put_resp_content_type("text/plain")
+    |> Plug.Conn.send_resp(200, formatted_entries)
   end
 
   def child_spec(_arg) do
